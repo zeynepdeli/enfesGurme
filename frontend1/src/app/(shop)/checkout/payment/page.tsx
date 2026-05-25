@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ShieldCheck, Lock, CreditCard, ChevronRight } from "lucide-react";
 
 const HEADER_HEIGHT = 116;
 
-export default function PaymentPage() {
+function PaymentContent() {
   const containerRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
@@ -28,7 +28,6 @@ export default function PaymentPage() {
       oldScript.parentNode?.replaceChild(newScript, oldScript);
     });
 
-    // İyzico widget yüklenince spinner'ı kaldır
     const timer = setTimeout(() => setLoaded(true), 800);
     return () => clearTimeout(timer);
   }, []);
@@ -38,7 +37,6 @@ export default function PaymentPage() {
       className="min-h-screen bg-[#f6efdd]"
       style={{ paddingTop: HEADER_HEIGHT }}
     >
-      {/* BREADCRUMB */}
       <div className="max-w-3xl mx-auto px-6 pt-8">
         <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#a67c3d] mb-8">
           <span
@@ -65,7 +63,6 @@ export default function PaymentPage() {
           <span className="text-[#3d3020]/50">Ödeme</span>
         </div>
 
-        {/* BAŞLIK */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-serif italic text-[#3d3020] mb-2">
             Güvenli Ödeme
@@ -77,7 +74,6 @@ export default function PaymentPage() {
           )}
         </div>
 
-        {/* GÜVENLİK ROZET BANDI */}
         <div className="flex items-center justify-center gap-6 mb-8">
           <div className="flex items-center gap-1.5 text-xs text-[#3d3020]/50">
             <Lock size={13} className="text-[#a67c3d]" />
@@ -95,9 +91,7 @@ export default function PaymentPage() {
           </div>
         </div>
 
-        {/* İYZİCO FORM ALANI */}
         <div className="relative">
-          {/* Yüklenirken spinner */}
           {!loaded && (
             <div className="absolute inset-0 flex items-center justify-center bg-[#f6efdd] z-10 rounded-2xl min-h-[300px]">
               <div className="flex flex-col items-center gap-3">
@@ -117,12 +111,19 @@ export default function PaymentPage() {
           />
         </div>
 
-        {/* ALT BİLGİ */}
         <p className="text-center text-xs text-[#3d3020]/30 mt-6 mb-12">
           Kart bilgileriniz iyzico altyapısı üzerinden şifreli olarak işlenir,
           sunucularımızda saklanmaz.
         </p>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={null}>
+      <PaymentContent />
+    </Suspense>
   );
 }
