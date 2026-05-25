@@ -1,236 +1,242 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { User } from "@/types";
-import { useUserMutations } from "@/hooks/use-user-mutations";
-import { LoadingSpinner } from "@/components/shared/loading-spinner";
-import { ErrorMessage } from "@/components/shared/error-message";
-import { CrudPageLayout } from "@/components/admin/shared/layouts/crud-page-layout";
-import { DataTable } from "@/components/admin/shared/data-display/data-table";
-import { UserDetailModal } from "@/components/admin/users/user-detail-modal";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
-  UserFilters,
-  UserFilterValues,
-} from "@/components/admin/users/user-filters";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Users, Mail, Calendar, ShoppingCart, MapPin, Eye } from "lucide-react";
-import { format } from "date-fns";
-import { tr } from "date-fns/locale";
+  Package,
+  ShoppingCart,
+  Users,
+  LayoutGrid,
+  ImageIcon,
+  Plus,
+  Star,
+  Sparkles,
+} from "lucide-react";
 
-export default function UsersPage() {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filters, setFilters] = useState<UserFilterValues>({
-    search: "",
-    role: "all",
-    startDate: "",
-    endDate: "",
-  });
+import StatsCard from "@/components/admin/dashboard/stats-card";
+import SalesChart from "@/components/admin/dashboard/sales-chart";
+import LowStockAlert from "@/components/admin/dashboard/low-stock-alert";
+import { Button } from "@/components/ui/button";
 
-  const {
-    data: users,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await api.get<User[]>("/api/users/admin/all");
-      return response.data || [];
-    },
-  });
+export default function AdminDashboardPage() {
+  const router = useRouter();
 
-  const { updateRole } = useUserMutations();
-
-  // Client-side filtreleme
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-
-    return users.filter((user) => {
-      // İsim veya email arama
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesName = user.name.toLowerCase().includes(searchLower);
-        const matchesEmail = user.email.toLowerCase().includes(searchLower);
-        if (!matchesName && !matchesEmail) return false;
-      }
-
-      // Rol filtresi
-      if (filters.role !== "all" && user.role !== filters.role) {
-        return false;
-      }
-
-      // Başlangıç tarihi
-      if (filters.startDate) {
-        const userDate = new Date(user.createdAt);
-        const startDate = new Date(filters.startDate);
-        if (userDate < startDate) return false;
-      }
-
-      // Bitiş tarihi
-      if (filters.endDate) {
-        const userDate = new Date(user.createdAt);
-        const endDate = new Date(filters.endDate);
-        endDate.setHours(23, 59, 59, 999);
-        if (userDate > endDate) return false;
-      }
-
-      return true;
-    });
-  }, [users, filters]);
-
-  const handleRoleChange = (userId: string, newRole: "USER" | "ADMIN") => {
-    if (confirm("Kullanıcı rolünü değiştirmek istediğinizden emin misiniz?")) {
-      updateRole({ id: userId, role: newRole });
-    }
-  };
-
-  const handleViewDetails = (user: User) => {
-    setSelectedUserId(user.id);
-    setIsModalOpen(true);
-  };
-
-  const getRoleBadgeVariant = (role: string): "default" | "secondary" => {
-    return role === "ADMIN" ? "default" : "secondary";
-  };
-
-  const columns = [
+  const menu = [
     {
-      key: "user",
-      label: "Kullanıcı",
-      width: "30%",
-      render: (user: User) => (
-        <div>
-          <div className="font-medium">{user.name}</div>
-          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-            <Mail className="h-3 w-3" />
-            {user.email}
-          </div>
-        </div>
-      ),
+      title: "Ürünler",
+      icon: Package,
+      href: "/admin/products",
+      desc: "Ürünleri yönet",
     },
     {
-      key: "role",
-      label: "Rol",
-      width: "15%",
-      render: (user: User) => (
-        <Select
-          value={user.role}
-          onValueChange={(value: "USER" | "ADMIN") =>
-            handleRoleChange(user.id, value)
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue>
-              <Badge variant={getRoleBadgeVariant(user.role)}>
-                {user.role}
-              </Badge>
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="USER">USER</SelectItem>
-            <SelectItem value="ADMIN">ADMIN</SelectItem>
-          </SelectContent>
-        </Select>
-      ),
+      title: "Siparişler",
+      icon: ShoppingCart,
+      href: "/admin/orders",
+      desc: "Siparişleri görüntüle",
     },
     {
-      key: "orders",
-      label: "Siparişler",
-      width: "15%",
-      render: (user: User) => (
-        <div className="flex items-center gap-2">
-          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{user._count?.orders || 0}</span>
-        </div>
-      ),
+      title: "Kategoriler",
+      icon: LayoutGrid,
+      href: "/admin/categories",
+      desc: "Kategori düzenle",
     },
     {
-      key: "addresses",
-      label: "Adresler",
-      width: "15%",
-      render: (user: User) => (
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{user._count?.addresses || 0}</span>
-        </div>
-      ),
+      title: "Kullanıcılar",
+      icon: Users,
+      href: "/admin/users",
+      desc: "Kullanıcıları yönet",
     },
     {
-      key: "createdAt",
-      label: "Kayıt Tarihi",
-      width: "15%",
-      render: (user: User) => (
-        <div className="text-sm">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3 text-muted-foreground" />
-            {format(new Date(user.createdAt), "dd MMM yyyy", { locale: tr })}
-          </div>
-        </div>
-      ),
+      title: "Slider",
+      icon: ImageIcon,
+      href: "/admin/hero-slides",
+      desc: "Ana sayfa slider",
+    },
+    {
+      title: "Öne Çıkan Kartlar",
+      icon: Sparkles,
+      href: "/admin/featured-cards",
+      desc: "Hero altı kartları yönet",
+    },
+    {
+      title: "En Çok Satan Kartlar",
+      icon: Star,
+      href: "/admin/bestseller-cards",
+      desc: "Bestseller alanını yönet",
     },
   ];
-
-  const actions = [
-    {
-      label: "Detay",
-      icon: <Eye className="h-4 w-4" />,
-      variant: "outline" as const,
-      onClick: handleViewDetails,
-    },
-  ];
-
-  if (isLoading) {
-    return <LoadingSpinner text="Kullanıcılar yükleniyor..." fullScreen />;
-  }
-
-  if (error) {
-    return <ErrorMessage message={error.message} />;
-  }
 
   return (
-    <>
-      <CrudPageLayout
-        title="Kullanıcılar"
-        description="Kayıtlı kullanıcıları görüntüleyin ve yönetin"
-      >
-        {/* Filtreleme */}
-        <UserFilters onFilterChange={setFilters} />
+    <div className="relative min-h-screen overflow-hidden bg-[#f6efdd] pb-20 pt-28">
+  
 
-        {/* Sonuç Sayısı */}
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            {filteredUsers.length} kullanıcı bulundu
-          </p>
+      <div className="container relative z-10 mx-auto px-4">
+        {/* HEADER */}
+        <div
+          className="
+            relative mb-12 overflow-hidden rounded-[28px]
+            border border-[#d0bc90]
+            bg-[#efe6cf]
+            p-6
+            shadow-[0_14px_30px_rgba(120,92,58,0.14),inset_0_1px_2px_rgba(255,255,255,0.55)]
+            md:p-8
+          "
+        >
+          <div
+            className="
+              pointer-events-none absolute inset-0 z-[1]
+              bg-[radial-gradient(ellipse_at_center,_rgba(252,247,236,0.98)_0%,_rgba(250,243,228,0.94)_42%,_rgba(246,236,214,0.86)_68%,_rgba(228,212,176,0.40)_100%)]
+            "
+          />
+
+          <div
+            className="
+              pointer-events-none absolute inset-[7px] z-[2]
+              rounded-[21px]
+              border border-[#d6c49a]/70
+            "
+          />
+
+          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#a67c3d]">
+                Yönetim Paneli
+              </span>
+
+              <h1 className="mt-2 font-serif text-4xl font-black italic text-[#2c1a0e] md:text-5xl">
+                Dashboard
+              </h1>
+
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#5e4734]/70">
+                Yönetim paneline hoş geldiniz. Ürünleri, siparişleri,
+                kategorileri ve ana sayfa vitrin alanlarını buradan
+                yönetebilirsiniz.
+              </p>
+            </div>
+
+            <Button
+              onClick={() => router.push("/admin/products")}
+              className="
+                h-12 rounded-full border-2 border-transparent bg-transparent
+                px-6 text-xs font-bold uppercase tracking-[0.18em]
+                text-[#e8dcc0] shadow-none transition-all duration-300
+                hover:brightness-110
+              "
+              style={{
+                backgroundImage: `
+                  linear-gradient(#524528, #524528),
+                  linear-gradient(to right, #6b3f18, #c8893a, #e8b060, #c8893a, #6b3f18)
+                `,
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+                boxShadow:
+                  "0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)",
+              }}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Yeni Ürün
+            </Button>
+          </div>
         </div>
 
-        {/* Data Table */}
-        <DataTable
-          data={filteredUsers}
-          columns={columns}
-          actions={actions}
-          emptyState={{
-            icon: <Users className="h-16 w-16 text-muted-foreground" />,
-            title: "Kullanıcı bulunamadı",
-            description: "Filtreleri değiştirmeyi deneyin",
-          }}
-        />
-      </CrudPageLayout>
+        {/* STATS */}
+        <div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+          <StatsCard title="Toplam Ürün" value="124" icon={Package} />
+          <StatsCard title="Siparişler" value="32" icon={ShoppingCart} />
+          <StatsCard title="Kullanıcılar" value="540" icon={Users} />
+          <StatsCard title="Gelir" value="₺12.400" icon={ShoppingCart} />
+        </div>
 
-      {/* User Detail Modal */}
-      <UserDetailModal
-        userId={selectedUserId}
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
-    </>
+        {/* QUICK ACTIONS */}
+        <div className="mb-14">
+          <div className="mb-5 flex items-end justify-between border-b border-[#3d3020]/10 pb-3">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#a67c3d]">
+                Yönetim
+              </span>
+
+              <h2 className="mt-1 font-serif text-2xl font-black italic text-[#2c1a0e]">
+                Hızlı Erişim
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {menu.map((item) => {
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => router.push(item.href)}
+                  className="
+                    group relative overflow-hidden rounded-[20px]
+                    border border-[#d0bc90]
+                    bg-[#efe6cf]
+                    p-5 text-left
+                    shadow-[0_10px_22px_rgba(120,92,58,0.12),inset_0_1px_2px_rgba(255,255,255,0.55)]
+                    transition-all duration-300
+                    hover:-translate-y-1
+                  "
+                >
+                  <div
+                    className="
+                      pointer-events-none absolute inset-0 z-[1]
+                      bg-[radial-gradient(ellipse_at_center,_rgba(252,247,236,0.98)_0%,_rgba(250,243,228,0.94)_42%,_rgba(246,236,214,0.86)_68%,_rgba(228,212,176,0.40)_100%)]
+                    "
+                  />
+
+                  <div
+                    className="
+                      pointer-events-none absolute inset-[6px] z-[2]
+                      rounded-[15px]
+                      border border-[#d6c49a]/70
+                    "
+                  />
+
+                  <div className="relative z-10">
+                    <div className="mb-5 flex items-center gap-4">
+                      <div
+                        className="
+                          flex h-12 w-12 shrink-0 items-center justify-center
+                          overflow-hidden rounded-full
+                          bg-cover bg-center
+                          text-[#2c1a0e]
+                          shadow-[inset_0_2px_5px_rgba(255,230,200,0.35),inset_0_-4px_7px_rgba(80,35,10,0.28),0_1px_2px_rgba(80,35,10,0.15)]
+                        "
+                        style={{
+                          backgroundImage: "url('/bkrr.png')",
+                        }}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </div>
+
+                      <h3 className="font-serif text-lg font-black text-[#2c1a0e]">
+                        {item.title}
+                      </h3>
+                    </div>
+
+                    <p className="text-sm leading-relaxed text-[#5e4734]/70">
+                      {item.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ALT GRID */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <SalesChart />
+          </div>
+
+          <div>
+            <LowStockAlert />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

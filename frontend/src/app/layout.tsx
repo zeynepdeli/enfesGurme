@@ -48,11 +48,11 @@ export default function RootLayout({
                 "radial-gradient(ellipse at top left, black 20%, transparent 75%)",
             }}
           />
-        </div>
 
-        {/* z-20 — içerik */}
-        <div className="relative z-20">
-          <Providers>{children}</Providers>
+          {/* z-20 — içerik */}
+          <div className="relative z-20">
+            <Providers>{children}</Providers>
+          </div>
         </div>
       </body>
     </html>

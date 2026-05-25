@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Mail,
@@ -17,7 +19,7 @@ const NAV_LINKS = [
 
 const CONTACT = [
   { icon: Phone, text: "+90 555 123 45 67" },
-  { icon: Mail, text: "info@zeugmagusto.com" },
+  { icon: Mail, text: "info@enfesgurme.com" },
   { icon: MapPin, text: "Gaziantep, Türkiye" },
 ];
 
@@ -29,44 +31,34 @@ const SOCIALS = [
 
 export function ShopFooter() {
   return (
-    <footer className="relative mt-auto overflow-hidden border-t border-white/10">
-      {/* Subtle top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[1px] bg-gradient-to-r from-transparent via-[#c8a44a]/40 to-transparent pointer-events-none" />
-
-      {/* Faint mosaic pattern overlay */}
+    <footer className="relative mt-auto overflow-hidden">
+      {/* BG IMAGE */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            0deg, transparent, transparent 39px, rgba(255,255,255,0.8) 39px, rgba(255,255,255,0.8) 40px
-          ), repeating-linear-gradient(
-            90deg, transparent, transparent 39px, rgba(255,255,255,0.8) 39px, rgba(255,255,255,0.8) 40px
-          )`,
-        }}
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url('/footer1.png')" }}
       />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-14 pb-8">
-        {/* ── Main grid ── */}
-        <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr_1fr_1fr] gap-10 mb-12">
-          {/* Brand */}
+      {/* OVERLAY */}
+      <div className="absolute inset-0 bg-[rgba(246,239,221,0.75)]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-8 pt-14">
+        {/* GRID */}
+        <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-[1.8fr_1fr_1fr_1fr]">
+          {/* BRAND */}
           <div>
-            <div className="mb-4">
-              <h3
-                className="text-2xl font-bold text-[#f0ead8] leading-none mb-1"
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-              >
-                Zeugma
-                <span className="text-[#c8a44a]"> Gusto</span>
-              </h3>
-              <div className="h-px w-12 bg-[#c8a44a]/50 mt-2" />
-            </div>
-            <p className="text-[#7da882] text-sm leading-relaxed max-w-[220px]">
-              Gaziantep'in binlerce yıllık mutfak mirasından ilham alarak, en
-              seçkin lezzetleri modern sofralara taşıyoruz.
+            <h3 className="mb-2 text-2xl font-bold text-[#1f1f1f]">
+              Enfes <span className="text-[#975e42]">Gurme</span>
+            </h3>
+
+            <div className="mb-4 h-px w-12 bg-[#975e42]/60" />
+
+            <p className="max-w-[240px] text-sm leading-relaxed text-black/70">
+              Gaziantep&apos;in binlerce yıllık mutfak mirasından ilham alarak,
+              en seçkin lezzetleri modern sofralara taşıyoruz.
             </p>
 
-            {/* Social icons */}
-            <div className="flex gap-2 mt-6">
+            {/* SOCIAL */}
+            <div className="mt-6 flex gap-2">
               {SOCIALS.map(({ href, Icon, label }) => (
                 <a
                   key={label}
@@ -74,27 +66,37 @@ export function ShopFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="w-9 h-9 flex items-center justify-center rounded-full border border-white/10 text-[#7da882] hover:border-[#c8a44a] hover:text-[#c8a44a] transition-all duration-200"
+                  className="
+                    flex h-9 w-9 items-center justify-center
+                    overflow-hidden rounded-full
+                    bg-[#c2815c] bg-cover bg-center bg-no-repeat
+                    text-black
+                    shadow-[inset_0_2px_5px_rgba(255,230,200,0.35),inset_0_-4px_7px_rgba(80,35,10,0.28),0_1px_2px_rgba(80,35,10,0.15)]
+                    transition hover:scale-105
+                  "
+                  style={{
+                    backgroundImage: "url('/bkrr.png')",
+                  }}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="h-4 w-4 drop-shadow-[0_1px_0_rgba(255,220,185,0.42)]" />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Quick links */}
+          {/* LINKS */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c8a44a] mb-5">
-              Keşfet
+            <h4 className="mb-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#1f1f1f]">
+              Kurumsal
             </h4>
+
             <ul className="space-y-3">
               {NAV_LINKS.map(({ href, label }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-[#7da882] text-sm hover:text-[#f0ead8] transition-colors flex items-center gap-2 group"
+                    className="text-sm text-[#1f1f1f] transition hover:text-[#975e42]"
                   >
-                    <span className="w-3 h-px bg-[#c8a44a]/0 group-hover:bg-[#c8a44a]/60 transition-all duration-200" />
                     {label}
                   </Link>
                 </li>
@@ -102,70 +104,130 @@ export function ShopFooter() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* CONTACT */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c8a44a] mb-5">
+            <h4 className="mb-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#1f1f1f]">
               İletişim
             </h4>
+
             <ul className="space-y-3">
               {CONTACT.map(({ icon: Icon, text }) => (
-                <li
-                  key={text}
-                  className="flex items-start gap-3 text-sm text-[#7da882]"
-                >
-                  <Icon className="w-4 h-4 mt-0.5 flex-shrink-0 text-[#4a6e50]" />
+                <li key={text} className="flex gap-3 text-sm text-[#1f1f1f]">
+                  <Icon className="mt-0.5 h-4 w-4 text-[#975e42]" />
                   <span>{text}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* NEWSLETTER */}
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c8a44a] mb-5">
-              Bülten
+            <h4 className="mb-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#1f1f1f]">
+              Bülten Aboneliği
             </h4>
-            <p className="text-[#7da882] text-sm mb-4 leading-relaxed">
-              Yeni ürünler ve kampanyalardan haberdar ol.
-            </p>
+
             <div className="flex flex-col gap-2">
               <input
                 type="email"
                 placeholder="E-posta adresin"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-sm text-[#dce8dd] placeholder:text-[#4a6e50] outline-none focus:border-[#c8a44a]/50 transition-colors"
+                className="
+                  w-full rounded-md border border-[#975e42]/40
+                  bg-transparent px-3 py-2 text-sm text-[#1f1f1f]
+                  outline-none placeholder:text-black/40
+                  focus:border-[#975e42]
+                "
               />
-              <button className="w-full bg-[#2b5530] hover:bg-[#3d7544] border border-white/10 hover:border-[#5fa866] rounded-lg px-3 py-2.5 text-sm text-[#dce8dd] font-medium transition-all duration-200">
-                Abone Ol
+
+              <button
+                type="button"
+                className="
+                  group relative inline-flex h-[48px] w-full items-center justify-center
+                  overflow-hidden rounded-[8px]
+
+                  border border-[#d8bf8a]
+
+                  bg-cover bg-center
+
+                  px-6
+
+                  text-[11px]
+                  font-bold
+                  uppercase
+                  tracking-[0.22em]
+
+                  transition-all duration-300
+
+                  hover:-translate-y-[1px]
+                  hover:brightness-105
+                "
+                style={{
+                  backgroundImage: "url('/cardDuvar.png')",
+                  boxShadow:
+                    "0 10px 18px rgba(120,92,58,0.16),0 3px 0 rgba(190,166,118,0.35),inset 0 1px 2px rgba(255,255,255,0.65),inset 0 -3px 8px rgba(160,126,78,0.12)",
+                }}
+              >
+                {/* LIGHT OVERLAY */}
+                <div
+                  className="
+                    pointer-events-none absolute inset-0 z-[1]
+                    bg-[linear-gradient(135deg,rgba(255,252,245,0.52),rgba(214,194,160,0.12))]
+                  "
+                />
+
+                {/* TOP LIGHT */}
+                <div
+                  className="
+                    pointer-events-none absolute inset-0 z-[2]
+                    bg-[linear-gradient(to_bottom,_rgba(255,255,255,0.22)_0%,transparent_45%)]
+                  "
+                />
+
+                {/* INNER BORDER */}
+                <div
+                  className="
+                    pointer-events-none absolute inset-[4px] z-[3]
+                    rounded-[4px]
+                    border border-[#e0c896]/60
+                  "
+                />
+
+                <span
+                  className="
+                    relative z-10
+                    flex w-full items-center justify-center
+                    text-center
+                    font-bold
+                    text-[#460e07]
+                  "
+                >
+                  Abone Ol
+                </span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* ── Divider with ornament ── */}
-        <div className="flex items-center gap-4 mb-6 opacity-40">
-          <div className="flex-1 h-px bg-white/15" />
-          <div className="flex gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-[#c8a44a]" />
-            <div className="w-1 h-1 rounded-full bg-[#c8a44a]" />
-            <div className="w-1 h-1 rounded-full bg-[#c8a44a]" />
+        {/* DIVIDER */}
+        <div className="mb-6 flex items-center gap-4 opacity-50">
+          <div className="h-px flex-1 bg-[#975e42]/40" />
+          <div className="flex gap-1">
+            <div className="h-1 w-1 rounded-full bg-[#975e42]" />
+            <div className="h-1 w-1 rounded-full bg-[#975e42]" />
+            <div className="h-1 w-1 rounded-full bg-[#975e42]" />
           </div>
-          <div className="flex-1 h-px bg-white/15" />
+          <div className="h-px flex-1 bg-[#975e42]/40" />
         </div>
 
-        {/* ── Bottom bar ── */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-[#4a6e50]">
-          <p>© 2025 Zeugma Gusto. Tüm hakları saklıdır.</p>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/privacy"
-              className="hover:text-[#7da882] transition-colors"
-            >
+        {/* BOTTOM */}
+        <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-black/60 sm:flex-row">
+          <p>© 2025 Enfes Gurme. Tüm hakları saklıdır.</p>
+
+          <div className="flex gap-4">
+            <Link href="/privacy" className="hover:text-[#975e42]">
               Gizlilik Politikası
             </Link>
-            <Link
-              href="/terms"
-              className="hover:text-[#7da882] transition-colors"
-            >
+
+            <Link href="/terms" className="hover:text-[#975e42]">
               Kullanım Koşulları
             </Link>
           </div>

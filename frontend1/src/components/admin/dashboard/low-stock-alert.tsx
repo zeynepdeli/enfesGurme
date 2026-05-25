@@ -1,67 +1,79 @@
 "use client";
 
 import { Product } from "@/types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
 
 interface LowStockAlertProps {
-  products: Product[];
+  products?: Product[];
 }
 
-export function LowStockAlert({ products }: LowStockAlertProps) {
-  if (products.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            Düşük Stok Uyarıları
-          </CardTitle>
-          <CardDescription>Stoku azalan ürünler</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
+export default function LowStockAlert({ products = [] }: LowStockAlertProps) {
+  return (
+    <div
+      className="
+        relative overflow-hidden rounded-[20px]
+        border border-[#d0bc90]
+        bg-[#efe6cf]
+        p-6
+        shadow-[0_10px_22px_rgba(120,92,58,0.12),inset_0_1px_2px_rgba(255,255,255,0.55)]
+      "
+    >
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,_rgba(252,247,236,0.98)_0%,_rgba(250,243,228,0.94)_42%,_rgba(246,236,214,0.86)_68%,_rgba(228,212,176,0.40)_100%)]" />
+      <div className="pointer-events-none absolute inset-[6px] z-[2] rounded-[15px] border border-[#d6c49a]/70" />
+
+      <div className="relative z-10">
+        <div className="mb-5 flex items-center gap-3">
+          <div
+            className="
+              flex h-11 w-11 items-center justify-center
+              overflow-hidden rounded-full
+              bg-cover bg-center
+              text-[#2c1a0e]
+              shadow-[inset_0_2px_5px_rgba(255,230,200,0.35),inset_0_-4px_7px_rgba(80,35,10,0.28)]
+            "
+            style={{ backgroundImage: "url('/bkrr.png')" }}
+          >
+            <AlertTriangle size={20} />
+          </div>
+
+          <div>
+            <h3 className="font-serif text-xl font-black italic text-[#2c1a0e]">
+              Düşük Stok Uyarıları
+            </h3>
+            <p className="text-xs text-[#5e4734]/60">
+              Kritik seviyedeki ürünler
+            </p>
+          </div>
+        </div>
+
+        {products.length === 0 ? (
+          <p className="py-8 text-center text-sm font-medium text-[#5e4734]/65">
             Düşük stoklu ürün yok
           </p>
-        </CardContent>
-      </Card>
-    );
-  }
+        ) : (
+          <div className="space-y-3">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="
+                  flex items-center justify-between rounded-[14px]
+                  border border-[#d0bc90]/60
+                  bg-[#efe3cf]/70
+                  px-4 py-3
+                "
+              >
+                <span className="font-serif text-sm font-bold text-[#2c1a0e]">
+                  {product.name}
+                </span>
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-yellow-600" />
-          Düşük Stok Uyarıları
-        </CardTitle>
-        <CardDescription>Stoku 10'un altında olan ürünler</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition"
-            >
-              <div>
-                <div className="font-medium">{product.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {product.category?.name}
-                </div>
+                <span className="rounded-full bg-[#7a3b1e]/10 px-3 py-1 text-xs font-bold text-[#7a3b1e]">
+                  Stok: {product.stock ?? 0}
+                </span>
               </div>
-              <Badge variant="destructive">{product.stock} adet</Badge>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

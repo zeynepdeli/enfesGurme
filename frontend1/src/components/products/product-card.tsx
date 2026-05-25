@@ -1,306 +1,432 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Product } from "@/types";
+import { CSSProperties, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-type ProductCardProduct = Omit<
-  Pick<Product, "name" | "price" | "slug" | "description" | "stock" | "images">,
-  "images"
-> & {
-  images?: { url: string; alt?: string }[];
+type Offset = {
+  top?: number;
+  left?: number;
+  right?: number;
+  bottom?: number;
 };
 
-export type ImageStyle = "rounded" | "circle" | "square";
-export type CardLayout = "vertical" | "horizontal";
-
-interface ProductCardProps {
-  product: ProductCardProduct;
-  layout?: CardLayout; // "vertical" (default) | "horizontal"
-  card?: { w?: number; h?: number };
-  frame?: { w?: number; h?: number };
-  offset?: { top?: number; left?: number };
-  imageHeight?: number;
-  imageWidth?: number;
-  imageOffset?: { top?: number; left?: number; right?: number }; // horizontal layout'ta fotoğraf konumu
-  imageStyle?: ImageStyle;
-  showStock?: boolean;
-  showDescription?: boolean;
-  showPrice?: boolean;
-  href?: string; // override default /products/[slug]
-  children?: React.ReactNode; // override content area completely
-}
-
-const DEFAULTS = {
-  card: { w: 200, h: 260 },
-  frame: { w: 240, h: 300 },
-  imageHeight: 110,
+type SizeProps = {
+  w: number;
+  h: number;
+  zIndex?: number;
 };
 
-/* ── Shared image node ──────────────────────────────── */
-function ProductImage({
-  product,
-  imageStyle,
-  width,
-  height,
-  className = "",
-}: {
-  product: ProductCardProduct;
-  imageStyle: ImageStyle;
-  width: number | string;
-  height: number | string;
+type ProductImage = {
+  url: string;
+  alt?: string;
+};
+
+type Product = {
+  name: string;
+  price: number;
+  slug: string;
+  description?: string;
+  stock?: number;
+  images?: ProductImage[];
+};
+
+type ImageLayout = SizeProps &
+  Offset & {
+    scale?: number;
+    objectFit?: CSSProperties["objectFit"];
+    className?: string;
+    shadow?: boolean;
+    shadowTop?: number;
+    shadowLeft?: number;
+    shadowWidth?: number;
+  };
+
+type ContentLayout = Offset & {
+  align?: "left" | "center" | "right";
   className?: string;
-}) {
-  const shapeClass =
-    imageStyle === "circle"
-      ? "rounded-full"
-      : imageStyle === "rounded"
-        ? "rounded-xl"
-        : "rounded-none";
+};
 
-  return (
-    <div
-      className={`overflow-hidden bg-gray/0 flex-shrink-0 ${shapeClass} ${className}`}
-      style={{ width, height }}
-    >
-      {product.images?.[0] ? (
-        <img
-          src={product.images[0].url}
-          alt={product.images[0].alt ?? product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      ) : (
-        <div className="w-full h-full bg-white/10 flex items-center justify-center text-2xl">
-          🧀
-        </div>
-      )}
-    </div>
-  );
-}
+type ProductCardProps = {
+  product: Product;
 
-/* ── Main component ─────────────────────────────────── */
+  card?: SizeProps;
+  image?: ImageLayout;
+  content?: ContentLayout;
+
+  showImage?: boolean;
+  showPrice?: boolean;
+  showDescription?: boolean;
+  showButton?: boolean;
+
+  actionText?: string;
+
+  href?: string;
+  clickable?: boolean;
+
+  containerClass?: string;
+  contentClass?: string;
+  style?: CSSProperties;
+
+  children?: ReactNode;
+  className?: string;
+
+  embossed?: boolean;
+
+  /**
+   * Örn:
+   * wallTexture="/duvarBg.png"
+   */
+  wallTexture?: string;
+};
+
 export function ProductCard({
   product,
-  layout = "vertical",
-  card = DEFAULTS.card,
-  frame = DEFAULTS.frame,
-  offset,
-  imageHeight = DEFAULTS.imageHeight,
-  imageWidth,
-  imageOffset,
-  imageStyle = "rounded",
-  showStock = false,
+
+  card = {
+    w: 150,
+    h: 228,
+  },
+
+  image = {
+    w: 118,
+    h: 112,
+    top: 24,
+    left: 16,
+    scale: 1,
+    shadow: false,
+  },
+
+  content = {
+    left: 0,
+    right: 0,
+    bottom: 10,
+    align: "center",
+  },
+
+  showImage = true,
   showDescription = true,
-  showPrice = true,
+  showPrice = false,
+  showButton = true,
+
+  actionText = "SEPETE EKLE",
+
   href,
+  clickable = true,
+
+  containerClass,
+  contentClass,
+  style,
+
   children,
+  className,
+
+  embossed = false,
+  wallTexture,
 }: ProductCardProps) {
-  const cardW = card.w ?? DEFAULTS.card.w;
-  const cardH = card.h ?? DEFAULTS.card.h;
-  const frameW = frame.w ?? DEFAULTS.frame.w;
-  const frameH = frame.h ?? DEFAULTS.frame.h;
+  const productImage = product.images?.[0];
+  const productImageSrc = productImage?.url;
 
-  /* ── Vertical layout calculations ── */
-  const isCircle = imageStyle === "circle";
-  const circleSize = isCircle ? (imageWidth ?? Math.round(cardW * 0.78)) : 0;
-  const circleTop = isCircle ? -(circleSize * 0.52) : 0;
-  const imageInCard = isCircle
-    ? Math.max(circleSize + circleTop, circleSize * 0.18)
-    : imageHeight;
-  const contentH = cardH - imageInCard;
+  const textAlign =
+    content.align === "left"
+      ? "items-start text-left"
+      : content.align === "right"
+        ? "items-end text-right"
+        : "items-center text-center";
 
-  /* ── Horizontal layout: image taşma miktarı ── */
-  // Görsel kartın sağından dışarı taşıyor, daire şeklinde
-  const hImgSize = imageWidth ?? Math.round(cardH * 1.05);
-  const hImgTop = imageOffset?.top ?? -(hImgSize - cardH) / 2;
-  const hImgLeft =
-    imageOffset?.left ??
-    (imageOffset?.right != null
-      ? cardW - imageOffset.right - hImgSize
-      : cardW - Math.round(hImgSize * 0.45));
+  const hasWallTexture = Boolean(wallTexture);
 
-  return (
-    <Link
-      href={href ?? `/products/${product.slug}`}
-      style={{ display: "contents" }}
+  const CardInner = (
+    <div
+      className={cn(
+        `
+        relative overflow-visible rounded-[10px]
+        border
+        transition-all duration-300
+        hover:-translate-y-[2px]
+
+        before:pointer-events-none
+        before:absolute
+        before:inset-0
+        before:z-[1]
+        before:rounded-[10px]
+
+        after:pointer-events-none
+        after:absolute
+        after:inset-0
+        after:z-[2]
+        after:rounded-[10px]
+        `,
+        hasWallTexture
+          ? `
+          bg-cover bg-center
+          border-[#d8bf8a]
+
+          before:bg-[linear-gradient(135deg,rgba(255,252,245,0.72),rgba(214,194,160,0.22))]
+
+          after:bg-[linear-gradient(to_bottom,_rgba(255,255,255,0.42)_0%,_rgba(255,255,255,0.10)_30%,_rgba(0,0,0,0)_62%,_rgba(120,92,58,0.10)_100%)]
+          `
+          : `
+          bg-[#efe6cf]
+          border-[#d0bc90]
+
+          before:bg-[radial-gradient(ellipse_at_center,_rgba(252,247,236,0.99)_0%,_rgba(250,243,228,0.97)_38%,_rgba(246,236,214,0.92)_62%,_rgba(228,212,176,0.58)_88%,_rgba(188,170,126,0.34)_100%)]
+
+          after:bg-[linear-gradient(to_bottom,_rgba(160,142,98,0.10)_0%,_rgba(255,255,255,0)_24%,_rgba(255,255,255,0)_76%,_rgba(160,142,98,0.10)_100%)]
+          `,
+        embossed
+          ? `
+  shadow-[0_10px_18px_rgba(120,92,58,0.16),0_3px_0_rgba(190,166,118,0.35),inset_0_1px_2px_rgba(255,255,255,0.65),inset_0_-3px_8px_rgba(160,126,78,0.12)]
+
+  hover:shadow-[0_14px_24px_rgba(120,92,58,0.20),0_4px_0_rgba(190,166,118,0.40),inset_0_1px_3px_rgba(255,255,255,0.72),inset_0_-4px_10px_rgba(160,126,78,0.14)]
+  `
+          : `
+  shadow-[0_2px_8px_rgba(148,128,82,0.14)]
+
+  hover:shadow-[0_6px_14px_rgba(148,128,82,0.18)]
+  `,
+        clickable && "cursor-pointer",
+        containerClass,
+        className,
+      )}
+      style={{
+        width: card.w,
+        height: card.h,
+        zIndex: card.zIndex,
+        backgroundImage: wallTexture ? `url(${wallTexture})` : undefined,
+        ...style,
+      }}
     >
-      <div
-        className="relative group cursor-pointer flex-shrink-0"
-        style={{ width: frameW, height: frameH }}
-      >
-        {/* FRAME */}
+      {/* Alt büyük yumuşak gölge */}
+      {embossed && (
         <div
-          className="absolute z-0 pointer-events-none rounded-sm"
-          style={{ width: frameW, height: frameH, top: 0, left: 0 }}
+          className="
+      pointer-events-none
+      absolute
+      left-[4%]
+      right-[4%]
+      -bottom-3
+      h-6
+      rounded-full
+      bg-[#8b6a42]/18
+      blur-xl
+      z-0
+    "
+        />
+      )}
+
+      {/* İç altın frame */}
+      <div
+        className={cn(
+          `
+          pointer-events-none
+          absolute
+          z-[5]
+          rounded-[8px]
+          border
+          `,
+          hasWallTexture
+            ? `
+            inset-[9px]
+            border-[#e0c896]/80
+
+            shadow-[inset_0_1px_0_rgba(255,252,242,0.82),inset_0_-1px_0_rgba(145,116,72,0.12)]
+            `
+            : `
+            inset-0
+            border-[#d6c49a]
+
+            shadow-[inset_0_1px_0_rgba(255,252,242,0.55),inset_0_-1px_0_rgba(168,146,102,0.18)]
+            `,
+        )}
+      />
+
+      {/* Kenar vignette */}
+      {hasWallTexture && (
+        <div
+          className="
+            pointer-events-none
+            absolute inset-0 z-[4]
+            rounded-[10px]
+
+            shadow-[inset_0_0_18px_rgba(120,92,58,0.10),inset_0_-4px_10px_rgba(120,92,58,0.08)]
+          "
+        />
+      )}
+
+      {/* Product Image */}
+      {showImage && productImageSrc && (
+        <div
+          className={cn("pointer-events-none absolute z-10", image.className)}
+          style={{
+            width: image.w,
+            height: image.h,
+            top: image.top,
+            left: image.left,
+            right: image.right,
+            bottom: image.bottom,
+          }}
         >
-          <img
-            src="/productCard.png"
-            alt=""
+          {image.shadow && (
+            <div
+              className="
+                absolute z-[1]
+                rounded-full
+                bg-black/15
+                blur-[10px]
+              "
+              style={{
+                top: `${image.shadowTop ?? 72}%`,
+                left: `${image.shadowLeft ?? 50}%`,
+                width: `${image.shadowWidth ?? 70}%`,
+                height: "18%",
+                transform: "translateX(-50%)",
+              }}
+            />
+          )}
+
+          <Image
+            src={productImageSrc}
+            alt={productImage.alt ?? product.name}
+            fill
+            priority
+            className="
+              relative z-[2]
+              object-contain
+              drop-shadow-[0_12px_16px_rgba(45,28,12,0.22)]
+            "
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "fill",
-              opacity: 0.9,
+              objectFit: image.objectFit ?? "contain",
+              transform: `scale(${image.scale ?? 1})`,
+              transformOrigin: "center center",
             }}
           />
         </div>
+      )}
 
-        {/* CARD */}
-        <div
-          className="absolute"
-          style={{
-            width: cardW,
-            height: cardH,
-            top: offset?.top ?? (frameH - cardH) / 2,
-            left: offset?.left ?? (frameW - cardW) / 2,
-          }}
-        >
-          {layout === "horizontal" ? (
-            /* ══════════════════════════════
-               HORIZONTAL LAYOUT
-               Sol: metin  |  Sağ: yuvarlak fotoğraf (taşıyor)
-            ══════════════════════════════ */
-            <Card className="relative z-10 h-full rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 transition-all duration-300 overflow-visible">
-              {/* Metin — sol taraf */}
-              <div className="flex flex-col justify-center h-full px-4 pr-[45%]">
-                <h3 className="font-semibold text-sm text-white leading-tight line-clamp-2 group-hover:text-[#c8a44a] transition-colors">
-                  {product.name}
-                </h3>
-                {showDescription && (
-                  <p className="text-white/50 text-[10px] mt-1 line-clamp-1 leading-snug">
-                    {product.description}
-                  </p>
-                )}
-                {showPrice && (
-                  <span className="text-xs font-bold text-[#c8a44a] mt-1.5">
-                    {product.price} TL
-                  </span>
-                )}
-              </div>
+      {/* Content */}
+      <div
+        className={cn(
+          "absolute z-20 flex flex-col",
+          textAlign,
+          content.className,
+          contentClass,
+        )}
+        style={{
+          top: content.top,
+          left: content.left,
+          right: content.right,
+          bottom: content.bottom,
+        }}
+      >
+        {children ?? (
+          <>
+            <h3
+              className="
+                font-serif
+                font-bold
+                leading-[1.05]
+                text-[#2f1f13]
+              "
+              style={{
+                fontSize: Math.max(12, card.w * 0.07),
+              }}
+            >
+              {product.name}
+            </h3>
 
-              {/* Görsel — sağdan taşan daire */}
-              <div
-                className="absolute z-20 overflow-hidden rounded-full ring-2 ring-white/20"
+            {showDescription && product.description && (
+              <p
+                className="
+                  mt-[5px]
+                  line-clamp-2
+                  font-serif
+                  italic
+                  leading-[1.2]
+                  text-[#5e4734]
+                "
                 style={{
-                  width: hImgSize,
-                  height: hImgSize,
-                  top: hImgTop,
-                  left: hImgLeft,
+                  fontSize: Math.max(8, card.w * 0.04),
                 }}
               >
-                {product.images?.[0] ? (
-                  <img
-                    src={product.images[0].url}
-                    alt={product.images[0].alt ?? product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-white/10 flex items-center justify-center text-2xl">
-                    🧀
-                  </div>
-                )}
-              </div>
-            </Card>
-          ) : (
-            /* ══════════════════════════════
-               VERTICAL LAYOUT (mevcut)
-            ══════════════════════════════ */
-            <Card className="relative z-10 h-full rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 hover:bg-white/20 transition-all duration-300">
-              {/* IMAGE — imageInCard 0 ise render etme */}
-              {imageInCard > 0 && (
-                <CardHeader
-                  className="p-0 relative flex-shrink-0"
-                  style={{ height: imageInCard }}
-                >
-                  {isCircle ? (
-                    <div
-                      className="absolute left-1/2 -translate-x-1/2 overflow-hidden bg-[#1a3a1d] rounded-full ring-2 ring-white/20 z-20"
-                      style={{
-                        width: circleSize,
-                        height: circleSize,
-                        top: circleTop,
-                      }}
-                    >
-                      {product.images?.[0] ? (
-                        <img
-                          src={product.images[0].url}
-                          alt={product.images[0].alt ?? product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-white/10 flex items-center justify-center text-2xl">
-                          🧀
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div
-                      className={`overflow-hidden bg-white/5 mx-auto ${
-                        imageStyle === "rounded"
-                          ? "rounded-t-xl"
-                          : "rounded-none"
-                      }`}
-                      style={{
-                        height: imageHeight,
-                        width: imageWidth ?? "100%",
-                      }}
-                    >
-                      {product.images?.[0] ? (
-                        <img
-                          src={product.images[0].url}
-                          alt={product.images[0].alt ?? product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-white/10 flex items-center justify-center text-2xl">
-                          🧀
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardHeader>
-              )}
+                {product.description}
+              </p>
+            )}
 
-              {/* CONTENT */}
-              <div
-                className="flex flex-col overflow-hidden"
-                style={{ height: imageInCard > 0 ? contentH : cardH }}
+            {showPrice && (
+              <p
+                className="
+                  mt-[5px]
+                  font-black
+                  text-[#3a2a1c]
+                "
+                style={{
+                  fontSize: Math.max(12, card.w * 0.055),
+                }}
               >
-                {children ?? (
-                  <>
-                    <CardContent className="px-3 pt-2 pb-0">
-                      <h3 className="font-semibold text-sm text-white leading-tight line-clamp-1 group-hover:text-[#c8a44a] transition-colors">
-                        {product.name}
-                      </h3>
-                      {showDescription && (
-                        <p className="text-white/50 text-[11px] mt-1 line-clamp-2 leading-snug">
-                          {product.description}
-                        </p>
-                      )}
-                    </CardContent>
+                ₺{product.price}
+              </p>
+            )}
 
-                    <CardFooter className="px-3 pb-3 pt-0 flex items-center justify-between">
-                      {showPrice && (
-                        <span className="text-sm font-bold text-[#c8a44a]">
-                          {product.price} TL
-                        </span>
-                      )}
-                      {showStock && product.stock > 0 && (
-                        <span className="text-[11px] text-white/40">
-                          Stok: {product.stock}
-                        </span>
-                      )}
-                    </CardFooter>
-                  </>
-                )}
-              </div>
-            </Card>
-          )}
-        </div>
+            {showButton && (
+              <button
+                type="button"
+                className="
+                  mt-auto
+                  rounded-full
+                  border-2
+                  border-transparent
+                  font-bold
+                  uppercase
+                  tracking-[0.18em]
+                  text-[#f2e7d2]
+                  transition-all
+                  duration-300
+                  hover:brightness-110
+                  active:scale-[0.98]
+                "
+                style={{
+                  fontSize: Math.max(7, card.w * 0.028),
+
+                  padding: `
+                    ${Math.max(4, card.h * 0.035)}px
+                    ${Math.max(12, card.w * 0.05)}px
+                  `,
+
+                  backgroundImage: `
+                    linear-gradient(#6a5234, #6a5234),
+                    linear-gradient(
+                      to right,
+                      #b38a52,
+                      #e3c287,
+                      #f1d9a7,
+                      #e3c287,
+                      #b38a52
+                    )
+                  `,
+
+                  backgroundOrigin: "border-box",
+                  backgroundClip: "padding-box, border-box",
+
+                  boxShadow:
+                    "0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.10)",
+                }}
+              >
+                {actionText}
+              </button>
+            )}
+          </>
+        )}
       </div>
+    </div>
+  );
+
+  return clickable && href ? (
+    <Link href={href} className="inline-block">
+      {CardInner}
     </Link>
+  ) : (
+    CardInner
   );
 }

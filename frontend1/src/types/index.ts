@@ -51,6 +51,26 @@ export interface Category {
   };
 }
 
+export type FeaturedCard = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  order: number;
+  isActive: boolean;
+};
+
+export type BestsellerCard = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  slug: string;
+  order: number;
+  isActive: boolean;
+};
+
 export interface Cart {
   id: string;
   items: CartItem[];
