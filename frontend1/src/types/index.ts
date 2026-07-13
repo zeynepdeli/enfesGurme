@@ -31,6 +31,9 @@ export interface Product {
   images?: ProductImage[];
   createdAt: string;
   updatedAt: string;
+  story?: string;
+  features?: string;
+  servingSuggestion?: string;
 }
 
 export interface ProductImage {

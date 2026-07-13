@@ -46,23 +46,74 @@ model Category {
   products    Product[]
 }
 
+model CategorySection {
+  id Int @id @default(1)
+
+  eyebrowText String @default("Keşfetmeye Devam Edin")
+  title       String @default("Kategoriler")
+
+  description String @default("Anadolu’nun en özel lezzetlerini keşfedin. Her kategori, geleneksel üretimin izlerini taşır.")
+
+  desktopBackground String @default("/categoryK.png")
+  mobileBackground  String @default("/categoryMobile.png")
+  tabletBackground  String @default("/categoryTablet.png")
+
+  videoUrl String @default("/videoc.mp4")
+
+  cardTexture String @default("/cardDuvar.png")
+
+  buttonText String @default("İncele")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Product {
-  id          String         @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
-  slug        String         @unique
+  slug        String  @unique
   description String
-  price       Decimal        @db.Decimal(10, 2)
-  stock       Int            @default(0)
-  isActive    Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @default(now()) @updatedAt
-  categoryId  String
-  cartItems   CartItem[]
-  likes       Like[]
-  orderItems  OrderItem[]
-  category    Category       @relation(fields: [categoryId], references: [id])
-  images      ProductImage[]
-  reviews     Review[]
+  price       Decimal @db.Decimal(10, 2)
+  stock       Int     @default(0)
+  isActive    Boolean @default(true)
+
+  story             String? @db.Text
+  features          String? @db.Text
+  servingSuggestion String? @db.Text
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  categoryId String
+
+  cartItems  CartItem[]
+  likes      Like[]
+  orderItems OrderItem[]
+  category   Category       @relation(fields: [categoryId], references: [id])
+  images     ProductImage[]
+  reviews    Review[]
+}
+
+model ProductDetailSetting {
+  id Int @id @default(1)
+
+  backgroundImage String @default("/heroB.png")
+  decorImageOne   String @default("/wo.png")
+  decorImageTwo   String @default("/wo.png")
+  logoImage       String @default("/logo.png")
+  cardTexture     String @default("/cardDuvar.png")
+
+  labelText     String @default("Özel Lezzet")
+  addToCartText String @default("Sepete Ekle")
+  buyNowText    String @default("Hemen Al")
+
+  quantityText String @default("Miktar")
+
+  storyTabText    String @default("Hikaye")
+  featuresTabText String @default("Özellikler")
+  servingTabText  String @default("Nasıl Servis Edilir?")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProductImage {
@@ -75,16 +126,83 @@ model ProductImage {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
+model FeatureSection {
+  id Int @id @default(1)
+
+  title       String @default("ANTEP'İN BEREKETİ")
+  description String @default("Gaziantep'in binlerce yıllık köklü mutfak mirasını, geleneksel yöntemlerle ve el emeğiyle modern sofralara taşıyoruz.")
+
+  backgroundImage String @default("/duvarBg.png")
+  cardTexture     String @default("/cardDuvar.png")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items FeatureItem[]
+}
+
+model FeatureItem {
+  id Int @id @default(autoincrement())
+
+  icon     String  @default("leaf")
+  title    String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  sectionId Int
+  section   FeatureSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+}
+
 model Review {
-  id        String   @id @default(uuid())
-  rating    Int
-  comment   String
+  id String @id @default(uuid())
+
+  rating  Int
+  comment String
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
   userId    String
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ReviewSection {
+  id Int @id @default(1)
+
+  title       String @default("Müşterilerimizin Kalbinden")
+  description String @default("Anadolu'nun eşsiz lezzetlerini deneyimleyen müşterilerimizin gerçek yorumları ve samimi paylaşımları.")
+
+  backgroundImage String @default("/duvarBg.png")
+  cardTexture     String @default("/cardDuvar.png")
+  frameImage      String @default("/hakiCerceve.png")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards HomeReviewCard[]
+}
+
+model HomeReviewCard {
+  id Int @id @default(autoincrement())
+
+  name    String
+  rating  Int    @default(5)
+  comment String
+
+  userImage    String?
+  productImage String
+
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  sectionId Int
+  section   ReviewSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Like {
@@ -172,8 +290,28 @@ model HeroSlide {
   order         Int      @default(0)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  updatedAt     DateTime @updatedAt
   scatterImages String[]
+}
+
+model HeroSetting {
+  id Int @id @default(1)
+
+  eyebrowText String @default("Anadolu'nun En Özel Lezzetleri")
+
+  backgroundImage String @default("/heroB.png")
+  buttonBgImage   String @default("/cardDuvar.png")
+
+  featuredTitle      String @default("Günün Öne Çıkanları")
+  featuredButtonText String @default("KEŞFET")
+
+  featuredLimit Int @default(4)
+
+  autoplay   Boolean @default(true)
+  autoplayMs Int     @default(5000)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -201,6 +339,19 @@ model BestsellerCard {
   updatedAt   DateTime @default(now()) @db.Timestamptz(6)
 }
 
+model BestsellerSection {
+  id Int @id @default(1)
+
+  title                 String @default("EN ÇOK SATANLAR")
+  backgroundImage       String @default("/duvarBg.png")
+  buttonBackgroundImage String @default("/cardDuvar.png")
+  plateImage            String @default("/bakırPlate.png")
+  addToCartText         String @default("Sepete Ekle")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum Role {
   USER
   ADMIN
@@ -213,4 +364,352 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
   PAID
+}
+
+model SiteHeader {
+  id Int @id @default(1)
+
+  logoUrl String @default("/logo.png")
+  logoAlt String @default("Anatolia Harvest")
+
+  deliveryTitle String @default("Teslimat Adresi")
+  deliveryText  String @default("Konum Seçin")
+
+  searchPlaceholder String @default("Ürün ara...")
+
+  accountText String @default("Hesabım")
+  loginText   String @default("Giriş Yap")
+  cartText    String @default("Sepetim")
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  navLinks HeaderNavLink[]
+}
+
+model HeaderNavLink {
+  id       Int     @id @default(autoincrement())
+  label    String
+  href     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  headerId Int
+  header   SiteHeader @relation(fields: [headerId], references: [id], onDelete: Cascade)
+}
+
+model SiteSeo {
+  id Int @id @default(1)
+
+  title       String @default("Enfes Gurme - Geleneksel Lezzetler")
+  description String @default("Gaziantep’in geleneksel gurme lezzetleri")
+  keywords    String @default("")
+  siteName    String @default("Enfes Gurme")
+
+  ogTitle       String?
+  ogDescription String?
+  ogImage       String?
+
+  twitterTitle String?
+  twitterDesc  String?
+  twitterImage String?
+
+  robotsIndex  Boolean @default(true)
+  robotsFollow Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AboutPage {
+  id Int @id @default(1)
+
+  backgroundColor String @default("#efe3cc")
+  cardBgImage     String @default("/cardDuvar.png")
+  textureImage    String @default("/bkrr.png")
+
+  sketchImageOne   String?
+  sketchImageTwo   String?
+  sketchImageThree String?
+  sketchImageFour  String?
+
+  visionTitle     String
+  visionText      String
+  visionImage     String
+  visionMiniImage String?
+
+  missionHeading String
+  missionTitle   String
+  missionText    String
+  missionImage   String
+
+  storyHeading String
+  storyTitle   String
+  storyText    String
+  storyImage   String
+
+  valuesHeading String
+  valuesTitle   String
+  valuesText    String
+  valuesImage   String
+
+  miniImageOne   String
+  miniImageTwo   String
+  miniImageThree String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactPage {
+  id Int @id @default(1)
+
+  pageTitle String @default("İletişim")
+
+  backgroundImage String  @default("/heroB.png")
+  sketchImageOne  String?
+  sketchImageTwo  String?
+
+  mapImage    String @default("/mapBg.png")
+  logoImage   String @default("/logo.png")
+  mapTitle    String @default("GAZİANTEP")
+  mapSubtitle String @default("Merkez")
+
+  cardBgImage  String @default("/cardDuvar.png")
+  textureImage String @default("/bkrr.png")
+
+  infoSmallTitle String @default("İletişim Bilgileri")
+  infoTitle      String @default("Bize Ulaşın")
+
+  addressTitle    String  @default("Adres:")
+  addressText     String  @default("Merkez Mah. Fıstık Cad.\nNo:123, Şahinbey, Gaziantep")
+  addressLinkText String  @default("Konumu Gör")
+  addressLink     String?
+
+  phoneTitle String @default("Telefon:")
+  phoneText  String @default("+90 342 123 4567")
+
+  emailTitle String @default("E-posta:")
+  emailText  String @default("iletisim@enfesgurme.com")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  socials ContactSocial[]
+}
+
+model ContactSocial {
+  id Int @id @default(autoincrement())
+
+  type     String // instagram, facebook, whatsapp
+  title    String
+  subtitle String
+  href     String
+
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  contactPageId Int
+  contactPage   ContactPage @relation(fields: [contactPageId], references: [id], onDelete: Cascade)
+}
+
+model SiteFooter {
+  id Int @id @default(1)
+
+  backgroundImage String @default("/footer1.png")
+  overlayColor    String @default("rgba(246,239,221,0.75)")
+
+  brandTitle       String @default("Enfes Gurme")
+  brandHighlight   String @default("Gurme")
+  brandDescription String @default("Gaziantep'in binlerce yıllık mutfak mirasından ilham alarak, en seçkin lezzetleri modern sofralara taşıyoruz.")
+
+  corporateTitle        String @default("Kurumsal")
+  contactTitle          String @default("İletişim")
+  newsletterTitle       String @default("Bülten Aboneliği")
+  newsletterPlaceholder String @default("E-posta adresin")
+  newsletterButtonText  String @default("Abone Ol")
+
+  cardBgImage  String @default("/cardDuvar.png")
+  textureImage String @default("/bkrr.png")
+
+  copyrightText String @default("© 2025 Enfes Gurme. Tüm hakları saklıdır.")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  navLinks     FooterNavLink[]
+  contactItems FooterContactItem[]
+  socials      FooterSocial[]
+  bottomLinks  FooterBottomLink[]
+}
+
+model FooterNavLink {
+  id       Int     @id @default(autoincrement())
+  label    String
+  href     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  footerId Int
+  footer   SiteFooter @relation(fields: [footerId], references: [id], onDelete: Cascade)
+}
+
+model FooterContactItem {
+  id       Int     @id @default(autoincrement())
+  type     String // phone, mail, address
+  text     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  footerId Int
+  footer   SiteFooter @relation(fields: [footerId], references: [id], onDelete: Cascade)
+}
+
+model FooterSocial {
+  id       Int     @id @default(autoincrement())
+  type     String // facebook, instagram, twitter
+  label    String
+  href     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  footerId Int
+  footer   SiteFooter @relation(fields: [footerId], references: [id], onDelete: Cascade)
+}
+
+model FooterBottomLink {
+  id       Int     @id @default(autoincrement())
+  label    String
+  href     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  footerId Int
+  footer   SiteFooter @relation(fields: [footerId], references: [id], onDelete: Cascade)
+}
+
+model FaqPageSetting {
+  id Int @id @default(1)
+
+  backgroundColor String @default("#efe3cc")
+  backgroundImage String @default("/duvarBg.png")
+  cardBgImage     String @default("/cardDuvar.png")
+  textureImage    String @default("/bkrr.png")
+
+  title        String  @default("SIKÇA SORULAN SORULAR")
+  subtitle     String?
+  contactTitle String  @default("Hala Sorunuz Mu Var?")
+  buttonText   String  @default("Bize Yazın")
+  buttonLink   String  @default("/contact")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FaqCategory {
+  id Int @id @default(autoincrement())
+
+  name     String
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  items FaqItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FaqItem {
+  id Int @id @default(autoincrement())
+
+  categoryId Int?
+  category   FaqCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  question String
+  answer   String
+
+  topIcon    String?
+  bottomIcon String?
+
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProfilePageSetting {
+  id Int @id @default(1)
+
+  backgroundColor String @default("#f6efdd")
+  backgroundImage String @default("/duvarBg.png")
+  cardBgImage     String @default("/cardDuvar.png")
+  textureImage    String @default("/bkrr.png")
+
+  bannerImage String @default("/duvarBg.png")
+  bannerText  String @default("Anatolia Harvest Heritage")
+
+  profileTabText String @default("Profilim")
+  ordersTabText  String @default("Siparişlerim")
+
+  profileTitle String @default("Kişisel Bilgiler")
+  editText     String @default("Düzenle")
+  cancelText   String @default("İptal")
+  saveText     String @default("Kaydet")
+  logoutText   String @default("Çıkış Yap")
+
+  nameLabel      String @default("Ad Soyad")
+  emailLabel     String @default("E-posta")
+  phoneLabel     String @default("Telefon")
+  dateLabel      String @default("Üyelik Tarihi")
+  addressLabel   String @default("Teslimat Adresi")
+  addressEmpty   String @default("Henüz adres eklenmemiş")
+  unknownText    String @default("Belirtilmemiş")
+
+  noOrdersText     String @default("Henüz siparişiniz yok")
+  startShoppingText String @default("Alışverişe Başla")
+
+  pendingText    String @default("Beklemede")
+  processingText String @default("Hazırlanıyor")
+  shippedText    String @default("Kargoda")
+  deliveredText  String @default("Teslim Edildi")
+  cancelledText  String @default("İptal")
+
+  totalText String @default("Toplam")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AppBackgroundSetting {
+  id              Int      @id @default(1)
+  backgroundImage String   @default("/antepKalesi.png")
+  isActive        Boolean  @default(true)
+  hiddenRoutes    String   @default("/admin,/login,/register,/cart")
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+model AuthPageSetting {
+  id                 Int      @id @default(1)
+
+  logoImage          String   @default("/logo.png")
+  cardBgImage        String   @default("/cardDuvar.png")
+  leftDecorImage     String   @default("/fistik.png")
+  rightDecorImage    String   @default("/fistik.png")
+
+  loginTitle         String   @default("Üye Girişi")
+  registerTitle      String   @default("Kayıt Ol")
+
+  loginButtonText    String   @default("Giriş Yap")
+  registerButtonText String   @default("Kayıt Ol")
+
+  forgotText         String   @default("Şifremi Unuttum?")
+  registerLinkText   String   @default("Kayıt Ol")
+  loginLinkText      String   @default("Giriş Yap")
+  haveAccountText    String   @default("Zaten hesabınız var mı?")
+
+  updatedAt          DateTime @updatedAt
 }

@@ -19,6 +19,21 @@ import uploadRoutes from "./routes/uploadRoutes";
 import heroSlideRoutes from "./routes/heroSlideRoutes";
 import featuredCardRoutes from "./routes/featuredCardRoutes";
 import bestsellerCardRoutes from "./routes/bestsellerCardRoutes";
+import siteHeaderRoutes from "./routes/siteHeader";
+import siteSeoRoutes from "./routes/siteSeoRoutes";
+import aboutPageRoutes from "./routes/aboutPageRoutes";
+import contactPageRoutes from "./routes/contactPageRoutes";
+import siteFooterRoutes from "./routes/siteFooterRoutes";
+import heroSettingRoutes from "./routes/heroSettingRoutes";
+import bestsellerSectionRoutes from "./routes/bestsellerSectionRoutes";
+import categorySectionRoutes from "./routes/categorySectionRoutes";
+import featureSectionRoutes from "./routes/featureSectionRoutes";
+import reviewSectionRoutes from "./routes/reviewSectionRoutes";
+import productDetailSettingRoutes from "./routes/productDetailSettingRoutes";
+import faqRoutes from "./routes/faqRoutes";
+import profilePageRoutes from "./routes/profilePageRoutes";
+import appBackgroundRoutes from "./routes/appBackgroundRoute";
+import authPageSettingRoutes from "./routes/authPageSettingRoutes";
 
 dotenv.config();
 
@@ -81,6 +96,23 @@ app.use("/api/hero-slides", heroSlideRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/featured-cards", featuredCardRoutes);
 app.use("/api/bestseller-cards", bestsellerCardRoutes);
+app.use("/api/site-header", siteHeaderRoutes);
+app.use("/api/site-seo", siteSeoRoutes);
+app.use("/api/about-page", aboutPageRoutes);
+app.use("/api/contact-page", contactPageRoutes);
+app.use("/api/site-footer", siteFooterRoutes);
+app.use("/api/hero-settings", heroSettingRoutes);
+app.use("/api/bestseller-section", bestsellerSectionRoutes);
+app.use("/api/category-section", categorySectionRoutes);
+app.use("/api/features-section", featureSectionRoutes);
+app.use("/api/reviews-section", reviewSectionRoutes);
+app.use("/api/product-detail-settings", productDetailSettingRoutes);
+app.use("/api/faq-page", faqRoutes);
+app.use("/api/profile-page", profilePageRoutes);
+app.use("/api/app-background", appBackgroundRoutes);
+app.use("/api/auth-page-settings", authPageSettingRoutes);
+
+
 // Health check
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({

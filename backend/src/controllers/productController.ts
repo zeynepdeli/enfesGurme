@@ -15,12 +15,10 @@ export const getAllProducts = async (req: Request, res: Response) => {
       sortOrder = "desc",
     } = req.query;
 
-    // Filtreleme koşulları
     const where: any = {
       isActive: true,
     };
 
-    // Arama (isim veya açıklama)
     if (search) {
       where.OR = [
         { name: { contains: search as string, mode: "insensitive" } },
@@ -28,24 +26,20 @@ export const getAllProducts = async (req: Request, res: Response) => {
       ];
     }
 
-    // Kategori filtresi
     if (categoryId) {
       where.categoryId = categoryId as string;
     }
 
-    // Fiyat aralığı
     if (minPrice || maxPrice) {
       where.price = {};
       if (minPrice) where.price.gte = parseFloat(minPrice as string);
       if (maxPrice) where.price.lte = parseFloat(maxPrice as string);
     }
 
-    // Stok durumu
     if (inStock === "true") {
       where.stock = { gt: 0 };
     }
 
-    // Sıralama
     const orderBy: any = {};
     orderBy[sortBy as string] = sortOrder;
 
@@ -74,6 +68,7 @@ export const getAllProducts = async (req: Request, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error("Get products error:", error);
+
     return res.status(500).json({
       status: "error",
       message: "Sunucu hatası",
@@ -85,41 +80,72 @@ export const getProductById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
 
-    // UUID mi slug mi? kontrol et
     const isUUID = /^[0-9a-f-]{36}$/.test(id);
 
     const product = await prisma.product.findFirst({
       where: isUUID ? { id } : { slug: id },
       include: {
         category: true,
-        images: { orderBy: { order: "asc" } },
+        images: {
+          orderBy: {
+            order: "asc",
+          },
+        },
         reviews: {
           include: {
-            user: { select: { id: true, name: true, email: true } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
           },
-          orderBy: { createdAt: "desc" },
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
     });
 
     if (!product) {
-      return res
-        .status(404)
-        .json({ status: "error", message: "Ürün bulunamadı" });
+      return res.status(404).json({
+        status: "error",
+        message: "Ürün bulunamadı",
+      });
     }
 
-    return res.status(200).json({ status: "success", data: product });
+    return res.status(200).json({
+      status: "success",
+      data: product,
+    });
   } catch (error) {
     console.error("Get product error:", error);
-    return res.status(500).json({ status: "error", message: "Sunucu hatası" });
+
+    return res.status(500).json({
+      status: "error",
+      message: "Sunucu hatası",
+    });
   }
 };
 
 // Yeni ürün oluştur (sadece admin)
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, slug, description, price, stock, categoryId, images } =
-      req.body;
+    const {
+      name,
+      slug,
+      description,
+
+      story,
+      features,
+      servingSuggestion,
+
+      price,
+      stock,
+      categoryId,
+      images,
+    } = req.body;
 
     if (!name || !slug || !description || !price || !categoryId) {
       return res.status(400).json({
@@ -129,7 +155,9 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     }
 
     const existingProduct = await prisma.product.findUnique({
-      where: { slug },
+      where: {
+        slug,
+      },
     });
 
     if (existingProduct) {
@@ -140,7 +168,9 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     }
 
     const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+      where: {
+        id: categoryId,
+      },
     });
 
     if (!category) {
@@ -155,9 +185,15 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
         name,
         slug,
         description,
+
+        story,
+        features,
+        servingSuggestion,
+
         price,
         stock: stock || 0,
         categoryId,
+
         images: images
           ? {
               create: images.map((img: any, index: number) => ({
@@ -181,6 +217,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error("Create product error:", error);
+
     return res.status(500).json({
       status: "error",
       message: "Sunucu hatası",
@@ -192,10 +229,16 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
 export const updateProduct = async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
+
     const {
       name,
       slug,
       description,
+
+      story,
+      features,
+      servingSuggestion,
+
       price,
       stock,
       categoryId,
@@ -204,7 +247,9 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     } = req.body;
 
     const existingProduct = await prisma.product.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     if (!existingProduct) {
@@ -216,7 +261,9 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 
     if (slug && slug !== existingProduct.slug) {
       const slugInUse = await prisma.product.findUnique({
-        where: { slug },
+        where: {
+          slug,
+        },
       });
 
       if (slugInUse) {
@@ -228,21 +275,56 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     }
 
     const product = await prisma.product.update({
-      where: { id },
+      where: {
+        id,
+      },
       data: {
-        ...(name && { name }),
-        ...(slug && { slug }),
-        ...(description && { description }),
-        ...(price && { price }),
-        ...(stock !== undefined && { stock }),
-        ...(categoryId && { categoryId }),
-        ...(isActive !== undefined && { isActive }),
+        ...(name && {
+          name,
+        }),
+
+        ...(slug && {
+          slug,
+        }),
+
+        ...(description && {
+          description,
+        }),
+
+        ...(story !== undefined && {
+          story,
+        }),
+
+        ...(features !== undefined && {
+          features,
+        }),
+
+        ...(servingSuggestion !== undefined && {
+          servingSuggestion,
+        }),
+
+        ...(price !== undefined && {
+          price,
+        }),
+
+        ...(stock !== undefined && {
+          stock,
+        }),
+
+        ...(categoryId && {
+          categoryId,
+        }),
+
+        ...(isActive !== undefined && {
+          isActive,
+        }),
+
         ...(images && {
           images: {
             deleteMany: {},
             create: images.map((img: any, index: number) => ({
               url: img.url,
-              alt: img.alt || name,
+              alt: img.alt || name || existingProduct.name,
               order: index,
             })),
           },
@@ -261,6 +343,7 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error("Update product error:", error);
+
     return res.status(500).json({
       status: "error",
       message: "Sunucu hatası",
@@ -274,7 +357,9 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
     const id = req.params.id as string;
 
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     if (!product) {
@@ -285,7 +370,9 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.product.delete({
-      where: { id },
+      where: {
+        id,
+      },
     });
 
     return res.status(200).json({
@@ -294,6 +381,7 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
     } as ApiResponse);
   } catch (error) {
     console.error("Delete product error:", error);
+
     return res.status(500).json({
       status: "error",
       message: "Sunucu hatası",

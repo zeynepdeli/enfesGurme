@@ -11,6 +11,13 @@ import {
   Plus,
   Star,
   Sparkles,
+  Menu,
+  SearchCode,
+  Mail,
+  Settings,
+  MessageSquare,
+  PackageSearch,
+  User,
 } from "lucide-react";
 
 import StatsCard from "@/components/admin/dashboard/stats-card";
@@ -64,12 +71,100 @@ export default function AdminDashboardPage() {
       href: "/admin/bestseller-cards",
       desc: "Bestseller alanını yönet",
     },
+    {
+      title: "Header Yönetimi",
+      icon: Menu,
+      href: "/admin/site-header",
+      desc: "Header alanını yönet",
+    },
+    {
+      title: "SEO Yönetimi",
+      icon: SearchCode,
+      href: "/admin/site-seo",
+      desc: "Site SEO ayarlarını yönet",
+    },
+    {
+      title: "About Yönetimi",
+      icon: ImageIcon,
+      href: "/admin/about-page",
+      desc: "Hakkımızda sayfasını yönet",
+    },
+    {
+      title: "Contact Yönetimi",
+      icon: Mail,
+      href: "/admin/contact-page",
+      desc: "İletişim sayfasını yönet",
+    },
+    {
+      title: "Footer Yönetimi",
+      icon: LayoutGrid,
+      href: "/admin/site-footer",
+      desc: "Footer alanını yönet",
+    },
+    {
+      title: "Hero Ayarları",
+      icon: Settings,
+      href: "/admin/hero-settings",
+      desc: "Hero genel ayarlarını yönet",
+    },
+    {
+      title: "Bestseller Ayarları",
+      icon: Star,
+      href: "/admin/bestseller-settings",
+      desc: "En çok satanlar bölümünü yönet",
+    },
+    {
+      title: "Kategori Ayarları",
+      icon: LayoutGrid,
+      href: "/admin/category-settings",
+      desc: "Kategori bölümünü yönet",
+    },
+    {
+      title: "Özellikler Ayarları",
+      icon: Star,
+      href: "/admin/features",
+      desc: "Ana sayfa özellikler bölümünü yönet",
+    },
+    {
+      title: "Müşteri Yorumları",
+      icon: MessageSquare,
+      href: "/admin/reviews",
+      desc: "Yorum bölümü yönetimi",
+    },
+    {
+      title: "Ürün Detay Sayfası",
+      href: "/admin/product-detail-settings",
+      icon: PackageSearch,
+      desc: "Ürün detay görünüm ayarları",
+    },
+    {
+      title: "SSS",
+      href: "/admin/faq-page",
+      icon: PackageSearch,
+      desc: "Sıkça Sorulan Sorular ayarları",
+    },
+    {
+      title: "Profile",
+      href: "/admin/profile-page",
+      icon: PackageSearch,
+      desc: "Profile Ayarları",
+    },
+    {
+      title: "Site Background",
+      icon: ImageIcon,
+      href: "/admin/app-background",
+      desc: "Genel arka plan görseli",
+    },
+    {
+      title: "Giriş / Kayıt",
+      icon: User,
+      href: "/admin/auth-page-settings",
+      desc: "Login ve register sayfası",
+    },
   ];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#f6efdd] pb-20 pt-28">
-  
-
       <div className="container relative z-10 mx-auto px-4">
         {/* HEADER */}
         <div

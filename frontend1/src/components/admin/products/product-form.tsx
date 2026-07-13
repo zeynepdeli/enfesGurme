@@ -2,11 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-
 import { useQuery } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
-
 import { Product, Category } from "@/types";
 
 import { Input } from "@/components/ui/input";
@@ -28,7 +26,6 @@ import {
   CheckCircle2,
   Package,
   Trash2,
-  Sparkles,
 } from "lucide-react";
 
 interface ProductFormProps {
@@ -48,23 +45,26 @@ export function ProductForm({
     name: "",
     slug: "",
     description: "",
+
+    story: "",
+    features: "",
+    servingSuggestion: "",
+
     price: 0,
     stock: 0,
     categoryId: "",
     isActive: true,
+
     images: [] as { url: string; alt: string }[],
   });
 
   const [uploading, setUploading] = useState(false);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
-
     queryFn: async () => {
       const response = await api.get<Category[]>("/api/categories");
-
       return response.data || [];
     },
   });
@@ -75,6 +75,11 @@ export function ProductForm({
         name: product.name,
         slug: product.slug,
         description: product.description,
+
+        story: product.story || "",
+        features: product.features || "",
+        servingSuggestion: product.servingSuggestion || "",
+
         price: product.price,
         stock: product.stock,
         categoryId: product.categoryId,
@@ -91,10 +96,16 @@ export function ProductForm({
         name: "",
         slug: "",
         description: "",
+
+        story: "",
+        features: "",
+        servingSuggestion: "",
+
         price: 0,
         stock: 0,
         categoryId: "",
         isActive: true,
+
         images: [],
       });
     }
@@ -103,9 +114,7 @@ export function ProductForm({
   const handleNameChange = (name: string) => {
     setFormData({
       ...formData,
-
       name,
-
       slug: name
         .toLowerCase()
         .replace(/ğ/g, "g")
@@ -145,7 +154,6 @@ export function ProductForm({
       if (data.status === "success") {
         setFormData((prev) => ({
           ...prev,
-
           images: [
             ...prev.images,
             {
@@ -169,7 +177,6 @@ export function ProductForm({
   const removeImage = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-
       images: prev.images.filter((_, i) => i !== index),
     }));
   };
@@ -252,6 +259,69 @@ export function ProductForm({
           placeholder="Ürün açıklaması..."
           rows={4}
           required
+          className={inputClassName}
+        />
+      </div>
+
+      {/* STORY */}
+      <div className="space-y-2">
+        <Label htmlFor="story" className={labelClassName}>
+          Ürün Hikayesi
+        </Label>
+
+        <Textarea
+          id="story"
+          value={formData.story}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              story: e.target.value,
+            })
+          }
+          placeholder="Ürünün hikayesini yazın..."
+          rows={5}
+          className={inputClassName}
+        />
+      </div>
+
+      {/* FEATURES */}
+      <div className="space-y-2">
+        <Label htmlFor="features" className={labelClassName}>
+          Ürün Özellikleri
+        </Label>
+
+        <Textarea
+          id="features"
+          value={formData.features}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              features: e.target.value,
+            })
+          }
+          placeholder="Ürün özelliklerini yazın..."
+          rows={5}
+          className={inputClassName}
+        />
+      </div>
+
+      {/* SERVING SUGGESTION */}
+      <div className="space-y-2">
+        <Label htmlFor="servingSuggestion" className={labelClassName}>
+          Servis Önerisi
+        </Label>
+
+        <Textarea
+          id="servingSuggestion"
+          value={formData.servingSuggestion}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              servingSuggestion: e.target.value,
+            })
+          }
+          placeholder="Ürün nasıl servis edilir?"
+          rows={5}
           className={inputClassName}
         />
       </div>
@@ -456,7 +526,6 @@ export function ProductForm({
                 </div>
               ))}
 
-              {/* EMPTY */}
               {formData.images.length === 0 && (
                 <div
                   className="

@@ -5,8 +5,7 @@ import { HeroSection } from "@/components/shop/home/hero-section";
 import { ReviewsSection } from "@/components/shop/home/reviews-section";
 export default function HomePage() {
   return (
-    <main className="">
-      {/* 📦 CONTENT */}
+    <main className="relative z-10 min-h-screen bg-transparent">
       <HeroSection />
       <FeaturedBand />
       <CategoriesSection />

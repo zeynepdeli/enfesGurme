@@ -2,15 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { Lock, Mail, ShieldCheck } from "lucide-react";
 
 import { authService } from "@/services/auth.service";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-import { Mail, Lock, ShieldCheck } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -45,55 +43,40 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#efe3cb]">
-      {/* HERO BG */}
-      <Image src="/heroB.png" alt="" fill priority className="object-contain" />
-
-      {/* HERO OVERLAYS */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_10%_45%,rgba(246,239,221,0.2)_0%,transparent_55%)]" />
-
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(246,239,221,0.0)_0%,rgba(246,239,221,0.8)_38%,rgba(246,239,221,0.3)_78%,rgba(246,239,221,0.08)_100%)]" />
-
-        <div
-          className="
-            absolute bottom-[-8%] right-[0%]
-            h-[30%] w-[30%]
-            bg-[radial-gradient(circle,rgba(235,222,198,0.92)_100%,rgba(235,222,198,0.46)_38%,rgba(235,222,198,0.16)_68%,transparent_100%)]
-            blur-[18px]
-          "
-        />
+    <main className="relative z-10 min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 z-[1]">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_58%_45%,rgba(246,239,221,0.42)_0%,rgba(246,239,221,0.08)_42%,transparent_72%)]" />
+        <div className="absolute bottom-[-10%] right-[-6%] h-[40%] w-[52%] rounded-full bg-[#e0ccaa] blur-[40px]" />
+        <div className="absolute top-[-8%] left-[-4%] h-[40%] w-[38%] rounded-full bg-[#e8d9b8]/50 blur-[35px]" />
+        <div className="absolute top-[-5%] right-[-4%] h-[15%] w-[50%] rounded-full bg-[#e8d4b0] blur-[30px]" />
       </div>
 
-      {/* FORM */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
+      <div className="relative z-20 flex min-h-screen items-center justify-center px-4 py-10">
         <div
           className="
-            relative overflow-hidden rounded-[7px]
+            relative w-[min(86vw,clamp(330px,28vw,520px))]
+            overflow-hidden rounded-[7px]
             border border-[#d8bf8a]
             bg-cover bg-center
             px-[clamp(28px,3vw,48px)]
             pb-[clamp(30px,3vw,46px)]
             pt-[clamp(26px,3vw,42px)]
             shadow-[0_10px_18px_rgba(120,92,58,0.16),0_3px_0_rgba(190,166,118,0.35),inset_0_1px_2px_rgba(255,255,255,0.65),inset_0_-3px_8px_rgba(160,126,78,0.12)]
-            w-[min(86vw,clamp(330px,28vw,520px))]
           "
           style={{
             backgroundImage: "url('/cardDuvar.png')",
           }}
         >
           <div className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(135deg,rgba(255,252,245,0.52),rgba(214,194,160,0.12))]" />
-
           <div className="pointer-events-none absolute inset-0 z-[2] bg-[linear-gradient(to_bottom,rgba(255,255,255,0.22)_0%,transparent_45%)]" />
-
           <div className="pointer-events-none absolute inset-[5px] z-[3] rounded-[4px] border border-[#e0c896]/60" />
 
           <div className="relative z-10">
-            {/* ICON */}
             <div className="mb-4 flex justify-center">
               <div
                 className="
-                  flex h-[clamp(46px,4vw,64px)] w-[clamp(46px,4vw,64px)]
+                  flex h-[clamp(46px,4vw,64px)]
+                  w-[clamp(46px,4vw,64px)]
                   items-center justify-center
                   rounded-full
                   border border-[#d8bf8a]
@@ -127,11 +110,7 @@ export default function AdminLoginPage() {
             {error && (
               <Alert
                 variant="destructive"
-                className="
-                  mb-4 border-red-300
-                  bg-red-50/80
-                  text-red-700
-                "
+                className="mb-4 border-red-300 bg-red-50/80 text-red-700"
               >
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -195,7 +174,8 @@ export default function AdminLoginPage() {
                 type="submit"
                 disabled={loading}
                 className="
-                  relative mt-2 h-[clamp(38px,3vw,56px)]
+                  relative mt-2
+                  h-[clamp(38px,3vw,56px)]
                   w-full overflow-hidden rounded-[5px]
                   border border-[#d8bf8a]
                   bg-cover bg-center
@@ -216,6 +196,6 @@ export default function AdminLoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

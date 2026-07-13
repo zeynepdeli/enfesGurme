@@ -1,0 +1,151 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { ChevronDown, HelpCircle } from "lucide-react";
+import type { FaqItem } from "@/app/(shop)/faq/page";
+
+type Props = {
+  faq: FaqItem;
+  cardBgImage: string;
+  textureImage: string;
+};
+
+export function FaqCard({ faq, cardBgImage, textureImage }: Props) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <article
+      className={`
+        group relative min-h-[185px] overflow-hidden rounded-[18px]
+        bg-cover bg-center p-4
+        shadow-[0_14px_34px_rgba(76,48,22,0.12),inset_0_1px_2px_rgba(255,255,255,0.42),inset_0_-6px_12px_rgba(122,73,32,0.07)]
+        transition-all duration-300
+        hover:-translate-y-1
+        hover:shadow-[0_18px_42px_rgba(76,48,22,0.18),inset_0_1px_2px_rgba(255,255,255,0.48)]
+        sm:min-h-[195px] sm:p-4
+        lg:min-h-[205px]
+        xl:min-h-[215px]
+      `}
+      style={{
+        backgroundImage: `
+          linear-gradient(
+            rgba(255,248,236,0.38),
+            rgba(255,248,236,0.28)
+          ),
+          url("${cardBgImage}")
+        `,
+      }}
+    >
+      {/* Kart dokusu */}
+      <div
+        className="
+          pointer-events-none absolute inset-0 z-0
+          bg-cover bg-center opacity-[0.08]
+          mix-blend-multiply
+        "
+        style={{
+          backgroundImage: `url("${textureImage}")`,
+        }}
+      />
+
+      {/* Kart ışık efekti */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_30%_12%,rgba(255,255,255,0.32),transparent_38%)]" />
+
+      {/* Header ile aynı bakır ikon arka planı */}
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-label={open ? "Soruyu kapat" : "Soruyu aç"}
+        aria-expanded={open}
+        className="
+          absolute right-3 top-3 z-20
+          flex h-8 w-8 items-center justify-center
+          overflow-visible rounded-full
+          bg-[#c2815c] bg-cover bg-center bg-no-repeat
+          text-black
+          shadow-[inset_0_2px_5px_rgba(255,230,200,0.35),inset_0_-4px_7px_rgba(80,35,10,0.28),0_1px_2px_rgba(80,35,10,0.15)]
+          transition-transform duration-300
+          hover:scale-105
+          sm:h-9 sm:w-9
+        "
+        style={{
+          backgroundImage: textureImage
+            ? `url("${textureImage}")`
+            : `url("/bkrr.png")`,
+        }}
+      >
+        <ChevronDown
+          size={16}
+          strokeWidth={2.35}
+          className={`
+            relative z-10
+            text-black
+            drop-shadow-[0_1px_0_rgba(255,220,185,0.42)]
+            transition-transform duration-300
+            ${open ? "rotate-180" : "rotate-0"}
+          `}
+        />
+      </button>
+
+      {/* İçerik */}
+      <div className="relative z-10 pr-9">
+        <h2 className="font-serif text-[17px] font-black leading-[1.08] tracking-[-0.03em] text-[#351509] sm:text-[18px] lg:text-[19px]">
+          {faq.question}
+        </h2>
+
+        <div
+          className={`
+            grid transition-all duration-300
+            ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}
+          `}
+        >
+          <div className="overflow-hidden">
+            <p className="mt-3 whitespace-pre-line text-[12.5px] font-medium leading-[1.45] text-[#2d2117]/85 sm:text-[13px]">
+              {faq.answer}
+            </p>
+          </div>
+        </div>
+
+        {!open && (
+          <p className="mt-3 line-clamp-3 whitespace-pre-line text-[12.5px] font-medium leading-[1.42] text-[#2d2117]/78 sm:text-[13px]">
+            {faq.answer}
+          </p>
+        )}
+      </div>
+
+      {/* Admin panelindeki alt dekor ikonu */}
+      <div className="pointer-events-none absolute bottom-4 right-4 z-10">
+        {faq.bottomIcon ? (
+          <Image
+            src={faq.bottomIcon}
+            alt=""
+            width={42}
+            height={42}
+            sizes="42px"
+            className="object-contain opacity-[0.38] mix-blend-multiply"
+          />
+        ) : (
+          <HelpCircle
+            size={40}
+            strokeWidth={1.4}
+            className="text-[#9c5732]/32"
+          />
+        )}
+      </div>
+
+      {/* Admin panelindeki üst dekor ikonu */}
+      {faq.topIcon && (
+        <div className="pointer-events-none absolute bottom-4 left-4 z-10 h-8 w-8 opacity-[0.32] mix-blend-multiply">
+          <Image
+            src={faq.topIcon}
+            alt=""
+            fill
+            sizes="32px"
+            className="object-contain"
+          />
+        </div>
+      )}
+    </article>
+  );
+}
