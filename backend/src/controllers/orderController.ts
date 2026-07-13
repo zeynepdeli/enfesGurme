@@ -92,57 +92,53 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
 };
 
 export const createOrder = async (req: AuthRequest, res: Response) => {
+  console.log("req.body:", JSON.stringify(req.body, null, 2)); // ← ekle
   try {
     const userId = req.user!.id;
-    const { addressId } = req.body;
+    const {
+      addressId,
+      items,
+    }: {
+      addressId: string;
+      items: Array<{ productId: string; quantity: number }>;
+    } = req.body;
 
-    if (!addressId) {
+    if (!addressId || !items?.length) {
       return res.status(400).json({
         status: "error",
-        message: "Adres seçimi gerekli",
-      } as ApiResponse);
+        message: !addressId ? "Adres seçimi gerekli" : "Sepetiniz boş",
+      });
     }
 
-    const address = await prisma.address.findUnique({
-      where: { id: addressId },
-    });
+    const [address, products] = await Promise.all([
+      prisma.address.findUnique({ where: { id: addressId } }),
+      prisma.product.findMany({
+        where: { id: { in: items.map((i) => i.productId) } },
+      }),
+    ]);
 
     if (!address || address.userId !== userId) {
-      return res.status(404).json({
-        status: "error",
-        message: "Adres bulunamadı",
-      } as ApiResponse);
+      return res
+        .status(404)
+        .json({ status: "error", message: "Adres bulunamadı" });
     }
 
-    const cart = await prisma.cart.findUnique({
-      where: { userId },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
-
-    if (!cart || cart.items.length === 0) {
-      return res.status(400).json({
-        status: "error",
-        message: "Sepetiniz boş",
-      } as ApiResponse);
-    }
-
-    for (const item of cart.items) {
-      if (item.product.stock < item.quantity) {
+    for (const item of items) {
+      const product = products.find((p) => p.id === item.productId);
+      if (!product)
+        return res
+          .status(404)
+          .json({ status: "error", message: "Ürün bulunamadı" });
+      if (product.stock < item.quantity)
         return res.status(400).json({
           status: "error",
-          message: `${item.product.name} için stok yetersiz`,
-        } as ApiResponse);
-      }
+          message: `${product.name} için stok yetersiz`,
+        });
     }
 
-    const total = cart.items.reduce((sum, item) => {
-      return sum + Number(item.product.price) * item.quantity;
+    const total = items.reduce((sum, item) => {
+      const product = products.find((p) => p.id === item.productId)!;
+      return sum + Number(product.price) * item.quantity;
     }, 0);
 
     const order = await prisma.$transaction(async (tx) => {
@@ -153,37 +149,24 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
           total,
           status: "PENDING",
           items: {
-            create: cart.items.map((item) => ({
+            create: items.map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
-              price: item.product.price,
+              price: products.find((p) => p.id === item.productId)!.price,
             })),
           },
         },
-        include: {
-          items: {
-            include: {
-              product: true,
-            },
-          },
-          address: true,
-        },
+        include: { items: { include: { product: true } }, address: true },
       });
 
-      for (const item of cart.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity,
-            },
-          },
-        });
-      }
-
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id },
-      });
+      await Promise.all(
+        items.map((item) =>
+          tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { decrement: item.quantity } },
+          }),
+        ),
+      );
 
       return newOrder;
     });
@@ -192,13 +175,10 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       status: "success",
       message: "Sipariş başarıyla oluşturuldu",
       data: order,
-    } as ApiResponse);
+    });
   } catch (error) {
     console.error("Create order error:", error);
-    return res.status(500).json({
-      status: "error",
-      message: "Sunucu hatası",
-    } as ApiResponse);
+    return res.status(500).json({ status: "error", message: "Sunucu hatası" });
   }
 };
 

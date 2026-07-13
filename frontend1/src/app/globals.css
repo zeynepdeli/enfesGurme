@@ -125,3 +125,14 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.45s ease both;
 }
+
+@layer utilities {
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

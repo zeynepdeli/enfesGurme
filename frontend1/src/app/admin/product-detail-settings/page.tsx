@@ -1,0 +1,422 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { api } from "@/lib/api";
+import { CheckCircle2, ImagePlus, Loader2, PackageSearch } from "lucide-react";
+
+type ProductDetailSetting = {
+  backgroundImage: string;
+  decorImageOne: string;
+  decorImageTwo: string;
+  logoImage: string;
+  cardTexture: string;
+  labelText: string;
+  addToCartText: string;
+  buyNowText: string;
+  quantityText: string;
+  storyTabText: string;
+  featuresTabText: string;
+  servingTabText: string;
+};
+
+type ImageField =
+  | "backgroundImage"
+  | "decorImageOne"
+  | "decorImageTwo"
+  | "logoImage"
+  | "cardTexture";
+
+const emptySetting: ProductDetailSetting = {
+  backgroundImage: "/heroB.png",
+  decorImageOne: "/wo.png",
+  decorImageTwo: "/wo.png",
+  logoImage: "/logo.png",
+  cardTexture: "/cardDuvar.png",
+  labelText: "Özel Lezzet",
+  addToCartText: "Sepete Ekle",
+  buyNowText: "Hemen Al",
+  quantityText: "Miktar",
+  storyTabText: "Hikaye",
+  featuresTabText: "Özellikler",
+  servingTabText: "Nasıl Servis Edilir?",
+};
+
+export default function ProductDetailSettingsPage() {
+  const [form, setForm] = useState<ProductDetailSetting>(emptySetting);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [uploadingField, setUploadingField] = useState<ImageField | null>(null);
+  const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const inputClassName =
+    "h-11 w-full rounded-md border border-[#d0bc90] bg-[#fff5ea]/70 px-4 text-sm text-[#2c1a0e] outline-none placeholder:text-[#5e4734]/45 focus:border-[#bc7b56]";
+
+  const labelClassName =
+    "text-[11px] font-bold uppercase tracking-[0.18em] text-[#7a3b1e]";
+
+  const loadSettings = async () => {
+    try {
+      setLoading(true);
+
+      const res = await api.get<ProductDetailSetting>(
+        "/api/product-detail-settings",
+      );
+
+      setForm(res.data || emptySetting);
+    } catch (error) {
+      console.error("Product detail settings load error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+
+      await api.put("/api/product-detail-settings/admin", form);
+      await loadSettings();
+    } catch (error) {
+      console.error("Product detail settings save error:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const uploadImage = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: ImageField,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingField(field);
+
+      const fd = new FormData();
+      fd.append("image", file);
+
+      const res = await api.upload<{ url: string }>("/api/upload", fd);
+      const imageUrl = res.data?.url;
+
+      if (!imageUrl) return;
+
+      setForm((prev) => ({
+        ...prev,
+        [field]: imageUrl,
+      }));
+    } catch (error) {
+      console.error("Product detail image upload error:", error);
+    } finally {
+      setUploadingField(null);
+
+      if (fileRefs.current[field]) {
+        fileRefs.current[field]!.value = "";
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#7a3b1e]" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl space-y-8 p-6">
+      <div className="rounded-[24px] border border-[#d0bc90] bg-[#efe6cf] p-6 shadow-[0_14px_30px_rgba(120,92,58,0.14)]">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#c2815c] text-[#2c1a0e]">
+            <PackageSearch size={22} />
+          </div>
+
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#a67c3d]">
+              Yönetim Paneli
+            </span>
+
+            <h1 className="mt-1 font-serif text-4xl font-black italic text-[#2c1a0e]">
+              Ürün Detay Sayfası
+            </h1>
+          </div>
+        </div>
+
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#5e4734]/70">
+          Ürün detay sayfasındaki arka planları, dekor görsellerini, buton
+          yazılarını ve sekme başlıklarını buradan yönetebilirsiniz.
+        </p>
+      </div>
+
+      <Panel title="Görsel Ayarları">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <ImageInput
+            label="Background Image"
+            field="backgroundImage"
+            value={form.backgroundImage}
+            setForm={setForm}
+            uploadImage={uploadImage}
+            fileRefs={fileRefs}
+            uploadingField={uploadingField}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <ImageInput
+            label="Decor Image One"
+            field="decorImageOne"
+            value={form.decorImageOne}
+            setForm={setForm}
+            uploadImage={uploadImage}
+            fileRefs={fileRefs}
+            uploadingField={uploadingField}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <ImageInput
+            label="Decor Image Two"
+            field="decorImageTwo"
+            value={form.decorImageTwo}
+            setForm={setForm}
+            uploadImage={uploadImage}
+            fileRefs={fileRefs}
+            uploadingField={uploadingField}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <ImageInput
+            label="Logo Image"
+            field="logoImage"
+            value={form.logoImage}
+            setForm={setForm}
+            uploadImage={uploadImage}
+            fileRefs={fileRefs}
+            uploadingField={uploadingField}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <ImageInput
+            label="Card Texture"
+            field="cardTexture"
+            value={form.cardTexture}
+            setForm={setForm}
+            uploadImage={uploadImage}
+            fileRefs={fileRefs}
+            uploadingField={uploadingField}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+        </div>
+      </Panel>
+
+      <Panel title="Metin Ayarları">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <InputField
+            label="Label Text"
+            value={form.labelText}
+            onChange={(v) => setForm((f) => ({ ...f, labelText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <InputField
+            label="Quantity Text"
+            value={form.quantityText}
+            onChange={(v) => setForm((f) => ({ ...f, quantityText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <InputField
+            label="Add To Cart Text"
+            value={form.addToCartText}
+            onChange={(v) => setForm((f) => ({ ...f, addToCartText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <InputField
+            label="Buy Now Text"
+            value={form.buyNowText}
+            onChange={(v) => setForm((f) => ({ ...f, buyNowText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+        </div>
+      </Panel>
+
+      <Panel title="Sekme Başlıkları">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <InputField
+            label="Story Tab Text"
+            value={form.storyTabText}
+            onChange={(v) => setForm((f) => ({ ...f, storyTabText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <InputField
+            label="Features Tab Text"
+            value={form.featuresTabText}
+            onChange={(v) => setForm((f) => ({ ...f, featuresTabText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+
+          <InputField
+            label="Serving Tab Text"
+            value={form.servingTabText}
+            onChange={(v) => setForm((f) => ({ ...f, servingTabText: v }))}
+            inputClassName={inputClassName}
+            labelClassName={labelClassName}
+          />
+        </div>
+      </Panel>
+
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="rounded-full bg-[#524528] px-7 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#e8dcc0] transition hover:brightness-110 disabled:opacity-60"
+      >
+        {saving ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Kaydediliyor
+          </span>
+        ) : (
+          <span className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Ayarları Kaydet
+          </span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function Panel({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[24px] border border-[#d0bc90] bg-[#efe6cf] p-6 shadow-[0_14px_30px_rgba(120,92,58,0.14)]">
+      <h2 className="mb-6 font-serif text-2xl font-black italic text-[#2c1a0e]">
+        {title}
+      </h2>
+
+      {children}
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  inputClassName,
+  labelClassName,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  inputClassName: string;
+  labelClassName: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className={labelClassName}>{label}</label>
+
+      <input
+        className={inputClassName}
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+function ImageInput({
+  label,
+  field,
+  value,
+  setForm,
+  uploadImage,
+  fileRefs,
+  uploadingField,
+  inputClassName,
+  labelClassName,
+}: {
+  label: string;
+  field: ImageField;
+  value: string;
+  setForm: React.Dispatch<React.SetStateAction<ProductDetailSetting>>;
+  uploadImage: (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: ImageField,
+  ) => Promise<void>;
+  fileRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
+  uploadingField: ImageField | null;
+  inputClassName: string;
+  labelClassName: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className={labelClassName}>{label}</label>
+
+      <div className="flex gap-2">
+        <input
+          className={inputClassName}
+          value={value || ""}
+          onChange={(e) =>
+            setForm((f) => ({
+              ...f,
+              [field]: e.target.value,
+            }))
+          }
+        />
+
+        <button
+          type="button"
+          onClick={() => fileRefs.current[field]?.click()}
+          className="flex h-11 shrink-0 items-center gap-2 rounded-md border border-[#bc7b56] bg-[#fff5ea]/70 px-4 text-xs font-bold uppercase tracking-[0.12em] text-[#6b3f18]"
+        >
+          {uploadingField === field ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ImagePlus className="h-4 w-4" />
+          )}
+          Seç
+        </button>
+
+        <input
+          ref={(el) => {
+            fileRefs.current[field] = el;
+          }}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => uploadImage(e, field)}
+        />
+      </div>
+
+      {value && (
+        <div className="relative mt-3 h-28 w-full overflow-hidden rounded-[14px] border border-[#d0bc90] bg-[#fff5ea]/40">
+          <Image src={value} alt={label} fill className="object-contain p-2" />
+        </div>
+      )}
+    </div>
+  );
+}

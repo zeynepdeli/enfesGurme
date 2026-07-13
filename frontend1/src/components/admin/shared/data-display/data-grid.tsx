@@ -13,18 +13,20 @@ interface EmptyState {
   };
 }
 
+interface GridCols {
+  default?: number;
+  md?: number;
+  lg?: number;
+  xl?: number;
+}
+
 interface DataGridProps<T> {
   data: T[];
   columns: GridColumn<T>[] | TableColumn<T>[];
   actions?: GridAction<T>[] | TableAction<T>[];
   layout?: "grid" | "table";
   emptyState?: EmptyState;
-  gridCols?: {
-    default?: number;
-    md?: number;
-    lg?: number;
-    xl?: number;
-  };
+  gridCols?: GridCols;
 }
 
 export function DataGrid<T extends { id: string }>({
@@ -33,14 +35,12 @@ export function DataGrid<T extends { id: string }>({
   actions = [],
   layout = "grid",
   emptyState,
-  gridCols,
+ gridCols,
 }: DataGridProps<T>) {
-  // Empty State
   if (data.length === 0 && emptyState) {
     return <EmptyStateCard {...emptyState} />;
   }
 
-  // Grid Layout
   if (layout === "grid") {
     return (
       <CardGrid
@@ -52,7 +52,6 @@ export function DataGrid<T extends { id: string }>({
     );
   }
 
-  // Table Layout
   return (
     <DataTable
       data={data}
@@ -62,5 +61,4 @@ export function DataGrid<T extends { id: string }>({
   );
 }
 
-// Re-export types
-export type { GridColumn, GridAction, TableColumn, TableAction };
+export type { GridColumn, GridAction,GridCols, TableColumn, TableAction };

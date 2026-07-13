@@ -31,6 +31,9 @@ export interface Product {
   images?: ProductImage[];
   createdAt: string;
   updatedAt: string;
+  story?: string;
+  features?: string;
+  servingSuggestion?: string;
 }
 
 export interface ProductImage {
@@ -50,6 +53,26 @@ export interface Category {
     products: number;
   };
 }
+
+export type FeaturedCard = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  order: number;
+  isActive: boolean;
+};
+
+export type BestsellerCard = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: number;
+  slug: string;
+  order: number;
+  isActive: boolean;
+};
 
 export interface Cart {
   id: string;
